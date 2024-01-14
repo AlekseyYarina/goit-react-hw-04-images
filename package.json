@@ -2,7 +2,7 @@
   "name": "react-homework-template",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://AlekseyYarina.github.io/goit-react-hw-03-image-finder/",
+  "homepage": "https://AlekseyYarina.github.io/goit-react-hw-04-images/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
