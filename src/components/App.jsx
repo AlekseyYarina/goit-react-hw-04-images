@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import { requestImgsByQuery } from '../servises/api';
 import { ImageGallery } from './ImageGallery/ImageGallery';
 import { STATUSES } from 'utils/constants';
@@ -8,100 +8,89 @@ import { Searchbar } from './Searchbar/Searchbar';
 import { Button } from './Button/Button';
 import { Modal } from './Modal/Modal';
 
-export class App extends Component {
-  state = {
-    images: [],
-    status: STATUSES.idle,
-    error: null,
-    searchTerm: '',
-    page: 1,
-    modalData: null,
-    totalImages: null,
-  };
+export const App = () => {
+  const [images, setImages] = useState([]);
+  const [status, setStatus] = useState(STATUSES.idle);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [modalData, setModalData] = useState(null);
+  const [totalImages, setTotalImages] = useState(null);
 
-  fetchImgsByQuery = async (searchTerm, page) => {
-    try {
-      this.setState({ status: STATUSES.pending });
+  useEffect(() => {
+    let prevSearchTerm = '';
+    let prevPage = 1;
 
-      const { hits, total } = await requestImgsByQuery(searchTerm, page);
+    const fetchImgsByQuery = async () => {
+      try {
+        setStatus(STATUSES.pending);
+        const { hits, total } = await requestImgsByQuery(searchTerm, page);
 
-      if (hits.length === 0) {
-        this.setState({
-          status: STATUSES.error,
-          error: (
-            <>
-              There are no images matching your request.
-              <br />
-              Please change your request.
-            </>
-          ),
-        });
-      } else {
-        this.setState(prevState => ({
-          images: [...prevState.images, ...hits],
-          status: STATUSES.success,
-          totalImages: total,
-        }));
+        if (hits.length === 0) {
+          setError(
+            STATUSES.error,
+            new Error(
+              'There are no images matching your request. Please change your request.'
+            )
+          );
+        } else {
+          setImages(prevImages => [...prevImages, ...hits]);
+          setStatus(STATUSES.success);
+          prevSearchTerm = searchTerm;
+          prevPage = page;
+          setTotalImages(total);
+        }
+      } catch (error) {
+        setError(STATUSES.error, new Error(error.message));
       }
-    } catch (error) {
-      this.setState({ status: STATUSES.error, error: error.message });
-    }
-  };
+    };
 
-  componentDidUpdate(prevProps, prevState) {
     if (
-      prevState.searchTerm !== this.state.searchTerm ||
-      prevState.page !== this.state.page
+      searchTerm !== '' &&
+      (searchTerm !== prevSearchTerm || page !== prevPage)
     ) {
-      this.fetchImgsByQuery(this.state.searchTerm, this.state.page);
+      fetchImgsByQuery();
     }
-  }
+  }, [searchTerm, page]);
 
-  handleSearch = (searchTerm, page) => {
-    this.setState({ searchTerm, page: 1, images: [] });
+  const handleSearch = (searchTerm, page) => {
+    setSearchTerm(searchTerm);
+    setPage(1);
+    setImages([]);
   };
 
-  handleLoadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  handleTakeLargeImage = largeImageUrl => {
-    this.setState({ modalData: largeImageUrl });
+  const handleTakeLargeImage = largeImageUrl => {
+    setModalData(largeImageUrl);
   };
 
-  handleCloceModal = () => {
-    this.setState({ modalData: null });
+  const handleCloseModal = () => {
+    setModalData(null);
   };
 
-  render() {
-    const { status, images, error, modalData } = this.state;
-    return (
-      <div>
-        <Searchbar onSearch={this.handleSearch} />
-        {status === STATUSES.pending && <Loader />}
-        {status === STATUSES.error && <ErrorMessage error={error} />}
-        {images.length > 0 && (
-          <div>
-            <ImageGallery
-              images={images}
-              handleTakeLargeImage={this.handleTakeLargeImage}
-            />
-            {status === STATUSES.success &&
-              images.length !== this.state.totalImages && (
-                <Button onClick={this.handleLoadMore} />
-              )}
+  return (
+    <div>
+      <Searchbar onSearch={handleSearch} />
+      {status === STATUSES.pending && <Loader />}
+      {status === STATUSES.error && <ErrorMessage error={error} />}
+      {images.length > 0 && (
+        <div>
+          <ImageGallery
+            images={images}
+            handleTakeLargeImage={handleTakeLargeImage}
+          />
+          {status === STATUSES.success && images.length !== totalImages && (
+            <Button onClick={handleLoadMore} />
+          )}
 
-            {modalData && (
-              <Modal
-                modalData={modalData}
-                handleCloceModal={this.handleCloceModal}
-              />
-            )}
-          </div>
-        )}
-      </div>
-    );
-  }
-}
+          {modalData && (
+            <Modal modalData={modalData} handleCloseModal={handleCloseModal} />
+          )}
+        </div>
+      )}
+    </div>
+  );
+};

@@ -1,14 +1,14 @@
 import React, { useEffect, useCallback } from 'react';
 import css from './Modal.module.css';
 
-export const Modal = ({ modalData, handleCloceModal }) => {
+export const Modal = ({ modalData, handleCloseModal }) => {
   const handleKeyPress = useCallback(
     e => {
       if (e.code === 'Escape') {
-        handleCloceModal();
+        handleCloseModal();
       }
     },
-    [handleCloceModal]
+    [handleCloseModal]
   );
 
   useEffect(() => {
@@ -24,10 +24,10 @@ export const Modal = ({ modalData, handleCloceModal }) => {
   const handleOverlayClick = useCallback(
     e => {
       if (e.target === e.currentTarget) {
-        handleCloceModal();
+        handleCloseModal();
       }
     },
-    [handleCloceModal]
+    [handleCloseModal]
   );
 
   return (
