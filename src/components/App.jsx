@@ -18,8 +18,7 @@ export const App = () => {
   const [totalImages, setTotalImages] = useState(null);
 
   useEffect(() => {
-    let prevSearchTerm = '';
-    let prevPage = 1;
+    if (!searchTerm) return;
 
     const fetchImgsByQuery = async () => {
       try {
@@ -33,24 +32,16 @@ export const App = () => {
               'There are no images matching your request. Please change your request.'
             )
           );
-        } else {
-          setImages(prevImages => [...prevImages, ...hits]);
-          setStatus(STATUSES.success);
-          prevSearchTerm = searchTerm;
-          prevPage = page;
-          setTotalImages(total);
+          return;
         }
+        setImages(prevImages => [...prevImages, ...hits]);
+        setStatus(STATUSES.success);
+        setTotalImages(total);
       } catch (error) {
         setError(STATUSES.error, new Error(error.message));
       }
     };
-
-    if (
-      searchTerm !== '' &&
-      (searchTerm !== prevSearchTerm || page !== prevPage)
-    ) {
-      fetchImgsByQuery();
-    }
+    fetchImgsByQuery();
   }, [searchTerm, page]);
 
   const handleSearch = (searchTerm, page) => {
