@@ -1,34 +1,27 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect } from 'react';
 import css from './Modal.module.css';
 
 export const Modal = ({ modalData, handleCloseModal }) => {
-  const handleKeyPress = useCallback(
-    e => {
+  useEffect(() => {
+    const handleKeyPress = e => {
       if (e.code === 'Escape') {
         handleCloseModal();
       }
-    },
-    [handleCloseModal]
-  );
+    };
 
-  useEffect(() => {
     const onKeyPress = e => handleKeyPress(e);
-
     window.addEventListener('keydown', onKeyPress);
 
     return () => {
       window.removeEventListener('keydown', onKeyPress);
     };
-  }, [handleKeyPress]);
+  }, [handleCloseModal]);
 
-  const handleOverlayClick = useCallback(
-    e => {
-      if (e.target === e.currentTarget) {
-        handleCloseModal();
-      }
-    },
-    [handleCloseModal]
-  );
+  const handleOverlayClick = e => {
+    if (e.target === e.currentTarget) {
+      handleCloseModal();
+    }
+  };
 
   return (
     <div className={css.Overlay} onClick={handleOverlayClick}>
